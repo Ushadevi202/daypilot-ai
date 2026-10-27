@@ -1,32 +1,25 @@
-import { useEffect, useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './auth/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Settings from './pages/Settings'
 
 export default function App() {
-  const [health, setHealth] = useState(null)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
-      })
-      .then(setHealth)
-      .catch((e) => setError(e.message))
-  }, [])
-
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">DayPilot AI</h1>
-        {error && <p className="text-red-600">Backend error: {error}</p>}
-        {!health && !error && <p>Checking backend...</p>}
-        {health && (
-          <ul className="space-y-1">
-            <li>API: <b>{health.status}</b></li>
-            <li>Database: <b>{health.database}</b></li>
-          </ul>
-        )}
-      </div>
-    </main>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
