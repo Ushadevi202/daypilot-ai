@@ -1,0 +1,11 @@
+.env
+*.pem
+application-local.properties
+backend/target/
+.idea/
+*.iml
+frontend/node_modules/
+frontend/dist/
+.vscode/
+Thumbs.db
+run.log
