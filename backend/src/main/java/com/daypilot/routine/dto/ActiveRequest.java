@@ -1,4 +1,6 @@
 package com.daypilot.routine.dto;
 
-public record ActiveRequest() {
+import jakarta.validation.constraints.NotNull;
+
+public record ActiveRequest(@NotNull Boolean active) {
 }
