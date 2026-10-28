@@ -35,7 +35,7 @@ export default function Settings() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <main className="flex justify-center p-4">
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-8 w-full max-w-md space-y-4">
         <h1 className="text-2xl font-bold">Settings</h1>
 
