@@ -1,0 +1,21 @@
+CREATE TABLE routine_occurrences (
+                                     id                BIGINT        NOT NULL AUTO_INCREMENT,
+                                     user_id           BIGINT        NOT NULL,
+                                     routine_id        BIGINT        NULL,
+                                     occurrence_date   DATE          NOT NULL,
+                                     title             VARCHAR(150)  NOT NULL,
+                                     description       VARCHAR(1000) NULL,
+                                     start_time        TIME          NOT NULL,
+                                     end_time          TIME          NOT NULL,
+                                     estimated_minutes INT           NOT NULL,
+                                     status            VARCHAR(16)   NOT NULL DEFAULT 'PENDING',
+                                     customized        BOOLEAN       NOT NULL DEFAULT FALSE,
+                                     completed_at      DATETIME(6)   NULL,
+                                     created_at        DATETIME(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                                     updated_at        DATETIME(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                     PRIMARY KEY (id),
+                                     CONSTRAINT fk_occ_user    FOREIGN KEY (user_id)    REFERENCES users (id)    ON DELETE CASCADE,
+                                     CONSTRAINT fk_occ_routine FOREIGN KEY (routine_id) REFERENCES routines (id) ON DELETE SET NULL,
+                                     CONSTRAINT uq_occ_routine_date UNIQUE (routine_id, occurrence_date),
+                                     INDEX idx_occ_user_date (user_id, occurrence_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

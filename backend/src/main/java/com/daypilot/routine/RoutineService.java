@@ -15,9 +15,11 @@ import com.daypilot.routine.dto.RoutineResponse;
 public class RoutineService {
 
     private final RoutineRepository routineRepository;
+    private final OccurrenceService occurrenceService;
 
-    public RoutineService(RoutineRepository routineRepository) {
+    public RoutineService(RoutineRepository routineRepository, OccurrenceService occurrenceService) {
         this.routineRepository = routineRepository;
+        this.occurrenceService = occurrenceService;
     }
 
     @Transactional(readOnly = true)
@@ -36,7 +38,9 @@ public class RoutineService {
         validate(request);
         Routine routine = new Routine(userId);
         apply(routine, request);
-        return RoutineResponse.from(routineRepository.save(routine));
+        Routine saved = routineRepository.save(routine);
+        occurrenceService.refreshAfterRoutineChange(saved);
+        return RoutineResponse.from(saved);
     }
 
     @Transactional
@@ -44,7 +48,7 @@ public class RoutineService {
         validate(request);
         Routine routine = findOwned(userId, id);
         apply(routine, request);
-        // 4B will also refresh future PENDING occurrences here; history is never rewritten.
+        occurrenceService.refreshAfterRoutineChange(routine);
         return RoutineResponse.from(routine);
     }
 
@@ -52,12 +56,15 @@ public class RoutineService {
     public RoutineResponse setActive(Long userId, Long id, boolean active) {
         Routine routine = findOwned(userId, id);
         routine.setActive(active);
+        occurrenceService.refreshAfterRoutineChange(routine);
         return RoutineResponse.from(routine);
     }
 
     @Transactional
     public void delete(Long userId, Long id) {
-        routineRepository.delete(findOwned(userId, id));
+        Routine routine = findOwned(userId, id);
+        occurrenceService.deleteFuturePending(routine);
+        routineRepository.delete(routine);
     }
 
     private Routine findOwned(Long userId, Long id) {
