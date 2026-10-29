@@ -21,3 +21,16 @@ export function longDate(iso) {
 
 // "06:30:00" -> "06:30"
 export const hhmm = (t) => (t ? t.slice(0, 5) : '')
+
+// Monday of the week that contains the given date (yyyy-mm-dd)
+export function mondayOf(iso) {
+  const d = new Date(iso + 'T00:00:00')
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+  return d.toLocaleDateString('en-CA')
+}
+
+export function shortDate(iso) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {
+    weekday: 'short', day: 'numeric', month: 'short',
+  })
+}

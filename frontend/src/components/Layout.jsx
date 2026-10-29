@@ -3,8 +3,10 @@ import { useAuth } from '../auth/AuthContext'
 
 const links = [
   { to: '/', label: 'Dashboard', end: true },
+  { to: '/week', label: 'Week' },
   { to: '/tasks', label: 'Tasks' },
   { to: '/routines', label: 'Routines' },
+  { to: '/history', label: 'History' },
   { to: '/settings', label: 'Settings' },
 ]
 

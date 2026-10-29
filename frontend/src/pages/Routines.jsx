@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import RoutineForm, { DAYS, routineToForm } from '../components/RoutineForm'
 import { hhmm, todayIn } from '../utils/dates'
+import WeeklyTimetable from '../components/WeeklyTimetable'
 
 const btn = 'rounded-lg border border-slate-300 px-3 py-1.5 text-sm'
 const dayShort = Object.fromEntries(DAYS)
@@ -92,6 +93,8 @@ export default function Routines() {
                        }} />
         </div>
       )}
+
+      {routines.some((r) => r.active) && <WeeklyTimetable routines={routines.filter((r) => r.active)} />}
 
       {loading && <p className="text-slate-600">Loading...</p>}
       {!loading && routines.length === 0 && (

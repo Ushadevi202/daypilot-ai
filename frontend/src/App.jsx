@@ -8,6 +8,8 @@ import Register from './pages/Register'
 import Routines from './pages/Routines'
 import Settings from './pages/Settings'
 import Tasks from './pages/Tasks'
+import History from './pages/History'
+import Week from './pages/Week'
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/routines" element={<Routines />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/week" element={<Week />} />
+              <Route path="/history" element={<History />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

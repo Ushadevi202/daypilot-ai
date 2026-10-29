@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import TaskForm, { toForm } from '../components/TaskForm'
 import TaskRow from '../components/TaskRow'
 import { addDays, todayIn } from '../utils/dates'
+   import TaskHistory from '../components/TaskHistory'
 
 const noFilters = { status: '', priority: '', category: '', q: '', overdue: false }
 const btn = 'rounded-lg border border-slate-300 px-3 py-1.5 text-sm'
@@ -20,6 +21,7 @@ export default function Tasks() {
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState(null)
   const [postponing, setPostponing] = useState(null)
+  const [historyId, setHistoryId] = useState(null)
 
   const params = new URLSearchParams()
   if (filters.status) params.set('status', filters.status)
@@ -83,6 +85,8 @@ export default function Tasks() {
       <button className={btn} onClick={() => { setEditing(t); setShowAdd(false) }}>Edit</button>
       {t.status === 'PENDING' && <button className={btn} onClick={() => startPostpone(t)}>Postpone</button>}
       <button className={btn} onClick={() => remove(t)}>Delete</button>
+      <button className={btn} onClick={() => setHistoryId(historyId === t.id ? null : t.id)}>History</button>
+      {historyId === t.id && <TaskHistory taskId={t.id} />}
       {postponing?.id === t.id && (
         <span className="flex items-center gap-2">
           <input type="date" aria-label="New due date" value={postponing.date} min={postponing.min}

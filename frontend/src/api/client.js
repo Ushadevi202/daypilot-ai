@@ -45,8 +45,13 @@ export async function api(path, { method = 'GET', body } = {}) {
     // response had no JSON body
   }
 
-  if (!response.ok) {
-    throw new ApiError(response.status, data?.detail || 'Something went wrong', data?.errors)
+    if (!response.ok) {
+    const message =
+      data?.detail || data?.message || data?.error ||
+      (response.status === 403 ? 'Security token problem (HTTP 403). Refresh the page and try again.'
+        : response.status === 401 ? 'Please log in again (HTTP 401).'
+        : `Request failed (HTTP ${response.status})`)
+    throw new ApiError(response.status, message, data?.errors)
   }
   return data
 }
