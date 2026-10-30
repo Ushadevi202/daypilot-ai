@@ -1,0 +1,42 @@
+CREATE TABLE job_applications (
+                                  id                BIGINT        NOT NULL AUTO_INCREMENT,
+                                  user_id           BIGINT        NOT NULL,
+                                  company           VARCHAR(150)  NOT NULL,
+                                  job_title         VARCHAR(150)  NOT NULL,
+                                  job_url           VARCHAR(500)  NULL,
+                                  location          VARCHAR(150)  NULL,
+                                  employment_type   VARCHAR(16)   NULL,
+                                  source            VARCHAR(100)  NULL,
+                                  applied_date      DATE          NULL,
+                                  resume_notes      VARCHAR(500)  NULL,
+                                  contact_name      VARCHAR(150)  NULL,
+                                  contact_email     VARCHAR(255)  NULL,
+                                  status            VARCHAR(16)   NOT NULL DEFAULT 'APPLIED',
+                                  status_changed_at DATETIME(6)   NOT NULL,
+                                  next_action       VARCHAR(255)  NULL,
+                                  follow_up_date    DATE          NULL,
+                                  notes             VARCHAR(2000) NULL,
+                                  created_at        DATETIME(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                                  updated_at        DATETIME(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                  PRIMARY KEY (id),
+                                  CONSTRAINT fk_jobapps_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                                  INDEX idx_jobapps_user_status (user_id, status),
+                                  INDEX idx_jobapps_user_followup (user_id, follow_up_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE job_events (
+                            id                 BIGINT        NOT NULL AUTO_INCREMENT,
+                            job_application_id BIGINT        NOT NULL,
+                            user_id            BIGINT        NOT NULL,
+                            type               VARCHAR(24)   NOT NULL,
+                            event_date         DATE          NULL,
+                            event_time         TIME          NULL,
+                            details            VARCHAR(1000) NULL,
+                            source             VARCHAR(10)   NOT NULL DEFAULT 'MANUAL',
+                            created_at         DATETIME(6)   NOT NULL,
+                            PRIMARY KEY (id),
+                            CONSTRAINT fk_jobevents_app  FOREIGN KEY (job_application_id) REFERENCES job_applications (id) ON DELETE CASCADE,
+                            CONSTRAINT fk_jobevents_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                            INDEX idx_jobevents_app (job_application_id, created_at),
+                            INDEX idx_jobevents_user_date (user_id, event_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

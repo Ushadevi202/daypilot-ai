@@ -70,17 +70,20 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [title, setTitle] = useState('')
+  const [anytime, setAnytime] = useState([])
 
   const load = useCallback(async () => {
     try {
-      const [occ, due, over] = await Promise.all([
+            const [occ, due, over, pending] = await Promise.all([
         api('/api/occurrences'),
         api(`/api/tasks?dueFrom=${today}&dueTo=${today}`),
         api('/api/tasks?overdue=true'),
+        api('/api/tasks?status=PENDING'),
       ])
       setOccurrences(occ)
       setDueToday(due)
       setOverdue(over)
+      setAnytime(pending.filter((t) => !t.dueDate))
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -173,6 +176,12 @@ export default function Dashboard() {
         {!loading && dueToday.length === 0 && <p className="text-sm text-slate-600">Nothing due today.</p>}
         <ul>{dueToday.map((t) => <TaskRow key={t.id} task={t} onToggle={toggleTask} />)}</ul>
       </section>
+            {anytime.length > 0 && (
+        <section className="rounded-xl bg-white p-4 shadow">
+          <h2 className="mb-1 font-semibold">Anytime tasks (no due date)</h2>
+          <ul>{anytime.map((t) => <TaskRow key={t.id} task={t} onToggle={toggleTask} />)}</ul>
+        </section>
+      )}
     </div>
   )
 }

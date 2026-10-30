@@ -15,14 +15,24 @@ export default function History() {
   const today = todayIn(user.timezone)
   const [days, setDays] = useState(7)
   const [items, setItems] = useState([])
+  const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     let cancelled = false
+    const from = addDays(today, -(days - 1))
     setLoading(true)
-    api(`/api/occurrences?from=${addDays(today, -(days - 1))}&to=${today}`)
-      .then((data) => { if (!cancelled) { setItems(data); setError(null) } })
+    Promise.all([
+      api(`/api/occurrences?from=${from}&to=${today}`),
+      api(`/api/tasks?dueFrom=${from}&dueTo=${today}`),
+    ])
+      .then(([occ, tsk]) => {
+        if (cancelled) return
+        setItems(occ)
+        setTasks(tsk)
+        setError(null)
+      })
       .catch((e) => { if (!cancelled) setError(e.message) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
@@ -35,8 +45,11 @@ export default function History() {
   const skipped = count('SKIPPED')
   const rate = completed + missed === 0 ? null : Math.round((completed * 100) / (completed + missed))
 
+  const tasksDone = tasks.filter((t) => t.status === 'COMPLETED').length
+  const tasksOpen = tasks.filter((t) => t.status === 'PENDING').length
+
   const dates = Array.from({ length: days }, (_, i) => addDays(today, -i))
-    .filter((d) => items.some((o) => o.date === d))
+    .filter((d) => items.some((o) => o.date === d) || tasks.some((t) => t.dueDate === d))
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -56,36 +69,55 @@ export default function History() {
       {loading && <p className="text-slate-600">Loading...</p>}
 
       <section className="rounded-xl bg-white p-4 shadow">
-        <h2 className="mb-2 font-semibold">Routine summary (days before today)</h2>
+        <h2 className="mb-2 font-semibold">Summary</h2>
         <p className="text-sm">
-          Completed {completed} · Missed {missed} · Skipped {skipped}
+          Routines (days before today): completed {completed} · missed {missed} · skipped {skipped}
         </p>
         <p className="mt-1 text-sm text-slate-600">
           {rate === null
-            ? 'No finished days yet.'
-            : `Completion rate: ${rate}% (completed ÷ completed + missed; skipped items are not counted).`}
+            ? 'No finished routine days yet.'
+            : `Routine completion rate: ${rate}% (completed ÷ completed + missed; skipped items are not counted).`}
         </p>
+        <p className="mt-2 text-sm">Tasks due in this period: done {tasksDone} · not done {tasksOpen}</p>
       </section>
 
-      {!loading && dates.length === 0 && <p className="text-slate-600">No routine items in this period.</p>}
+      {!loading && dates.length === 0 && <p className="text-slate-600">Nothing recorded in this period.</p>}
 
       {dates.map((d) => (
         <section key={d} className="rounded-xl bg-white p-4 shadow">
           <h2 className="mb-1 font-semibold">{shortDate(d)}{d === today ? ' (today)' : ''}</h2>
           <ul>
             {items.filter((o) => o.date === d).map((o) => (
-              <li key={o.id} className="flex flex-wrap items-center gap-2 border-t border-slate-100 py-2 first:border-t-0">
+              <li key={`o${o.id}`} className="flex flex-wrap items-center gap-2 border-t border-slate-100 py-2 first:border-t-0">
                 <span className="min-w-0 flex-1 text-sm">
                   <span className="font-medium">{hhmm(o.startTime)}</span> {o.title}
                 </span>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge[o.status]}`}>
-                  {o.status.toLowerCase()}
+                  routine · {o.status.toLowerCase()}
+                </span>
+              </li>
+            ))}
+            {tasks.filter((t) => t.dueDate === d).map((t) => (
+              <li key={`t${t.id}`} className="flex flex-wrap items-center gap-2 border-t border-slate-100 py-2 first:border-t-0">
+                <span className="min-w-0 flex-1 text-sm">
+                  {t.scheduledTime && <span className="font-medium">{hhmm(t.scheduledTime)} </span>}
+                  {t.title}
+                </span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  t.status === 'COMPLETED' ? 'bg-teal-100 text-teal-900'
+                    : t.overdue ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-900'}`}>
+                  task · {t.status === 'COMPLETED' ? 'completed' : t.overdue ? 'not done' : 'pending'}
                 </span>
               </li>
             ))}
           </ul>
         </section>
       ))}
+
+      <p className="text-xs text-slate-600">
+        Tasks appear on their due date. Tasks with no due date are not listed here. For the change history of
+        one task, open Tasks and click its History button.
+      </p>
     </div>
   )
 }

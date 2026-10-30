@@ -59,7 +59,7 @@ export default function Tasks() {
   async function quickAdd(e) {
     e.preventDefault()
     if (!quickTitle.trim()) return
-    await run(() => api('/api/tasks', { method: 'POST', body: { title: quickTitle.trim() } }))
+        await run(() => api('/api/tasks', { method: 'POST', body: { title: quickTitle.trim(), dueDate: today } }))
     setQuickTitle('')
   }
 
@@ -109,7 +109,7 @@ export default function Tasks() {
       {error && <p role="alert" className="rounded bg-red-50 p-2 text-sm text-red-700">{error}</p>}
 
       <form onSubmit={quickAdd} className="flex gap-2">
-        <input aria-label="Quick add task" placeholder="Quick add: type a task and press Enter"
+        <input aria-label="Quick add task" placeholder="Quick add for today: type a task and press Enter"
                value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} maxLength={150}
                className={`${field} flex-1`} />
         <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Add</button>
